@@ -58,7 +58,22 @@
   // Footer year
   document.querySelectorAll('.yr').forEach(function (y) { y.textContent = new Date().getFullYear(); });
 
-  // Quote forms -> Formspree
+  // File picker: show chosen file names, support drag and drop
+  document.querySelectorAll('.file-input').forEach(function (inp) {
+    var drop = document.querySelector('label.file-drop[for="' + inp.id + '"]');
+    if (!drop) return;
+    var txt = drop.querySelector('.file-text'), orig = txt.innerHTML;
+    function show() {
+      var n = Array.prototype.map.call(inp.files, function (f) { return f.name; });
+      txt.innerHTML = n.length ? '<strong>' + n.length + ' file' + (n.length > 1 ? 's' : '') + ' attached</strong><small>' + n.join(', ') + '</small>' : orig;
+    }
+    inp.addEventListener('change', show);
+    ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('drag'); }); });
+    ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('drag'); }); });
+    drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) { inp.files = e.dataTransfer.files; show(); } });
+  });
+
+  // Contact forms -> Formspree. If an attachment is rejected, resend without it.
   document.querySelectorAll('form.quote-form').forEach(function (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -66,18 +81,30 @@
       var fd = new FormData(form);
       var cov = fd.getAll('coverage').join(', ') || 'Not specified';
       fd.delete('coverage'); fd.append('coverage', cov);
+      var files = form.querySelector('.file-input'), hasFiles = files && files.files.length > 0;
       var b = form.querySelector('button[type=submit]'), label = b.textContent;
       b.disabled = true; b.textContent = 'Sending…';
-      fetch(form.getAttribute('data-endpoint'), { method: 'POST', body: fd, headers: { Accept: 'application/json' } })
-        .then(function (r) {
-          if (!r.ok) throw new Error('bad');
-          form.style.display = 'none';
-          form.parentNode.querySelector('.form-success').style.display = 'block';
-        })
-        .catch(function () {
-          b.disabled = false; b.textContent = label;
-          alert('Sorry, something went wrong. Please call (214) 531-7932 or email eric@texastrailmark.com.');
+      function send(data) { return fetch(form.getAttribute('data-endpoint'), { method: 'POST', body: data, headers: { Accept: 'application/json' } }); }
+      function done(note) {
+        form.style.display = 'none';
+        var ok = form.parentNode.querySelector('.form-success');
+        if (note) ok.querySelector('.ok-msg').textContent = note;
+        ok.style.display = 'block';
+      }
+      function fail() {
+        b.disabled = false; b.textContent = label;
+        alert('Sorry, something went wrong. Please call (214) 531-7932 or email eric@texastrailmark.com.');
+      }
+      send(fd).then(function (r) {
+        if (r.ok) return done();
+        if (!hasFiles) throw new Error('bad');
+        fd.delete('attachment');
+        fd.append('attachment_note', 'Visitor tried to attach a file, but it could not be uploaded.');
+        return send(fd).then(function (r2) {
+          if (!r2.ok) throw new Error('bad');
+          done('Eric received your message, but your file could not be uploaded. Please email your policy to eric@texastrailmark.com and he\'ll take a look.');
         });
+      }).catch(fail);
     });
   });
 })();

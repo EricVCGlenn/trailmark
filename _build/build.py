@@ -2,19 +2,25 @@
 """Builds texastrailmark.com as a static multi-page site with clean URLs."""
 import json, os, re, sys, html
 sys.path.insert(0, os.path.dirname(__file__))
-from content import SITE, AREAS, PRODUCTS, GENERAL_FAQ, POSTS
+from content import SITE, AREAS, PRODUCTS, GENERAL_FAQ, POSTS, CARRIERS
 
 OUT = sys.argv[1]
 HERE = os.path.dirname(__file__)
 U = SITE["url"]
 P = {p["slug"]: p for p in PRODUCTS}
+QL = f'href="{SITE["quote"]}" target="_blank" rel="noopener"'
+CL = f'href="{SITE["client"]}" target="_blank" rel="noopener"'
 
 def esc(s): return html.escape(s, quote=True)
 def strip(s): return re.sub(r"<[^>]+>", "", s).replace("&amp;", "&")
 def write(path, text):
+    if path.endswith(".html"):
+        # Every "get a quote" link goes to the EZLynx Consumer Quoting portal.
+        text = re.sub(r'href="/contact/(?:\?coverage=\w+)?#quote"', QL, text)
     full = os.path.join(OUT, path)
     os.makedirs(os.path.dirname(full) or OUT, exist_ok=True)
     open(full, "w", encoding="utf-8").write(text)
+
 def nice_date(d):
     y, m, dd = d.split("-")
     return ["January","February","March","April","May","June","July","August","September","October","November","December"][int(m)-1] + f" {int(dd)}, {y}"
@@ -22,6 +28,8 @@ def img(slug, card=False): return f"/images/products/{slug}-denton-tx{'-card' if
 
 # ---------------------------------------------------------------- icons
 I = {
+ "lock": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+ "doc": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>',
  "phone": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
  "mail": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
  "clock": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
@@ -44,7 +52,8 @@ def org_schema():
         "@type": "InsuranceAgency", "@id": U + "/#agency",
         "name": SITE["name"], "url": U + "/",
         "logo": U + "/images/logo.png", "image": U + "/images/logo.png",
-        "description": "Independent insurance agency in Denton, Texas offering auto, home, renters, condo and townhome, motorcycle, landlord, jewelry, umbrella, boat, business and RV insurance from multiple carriers.",
+        "legalName": "Trailmark Insurance Advisors LLC",
+        "description": "Independent insurance agency in Denton, Texas, working with Progressive, Travelers, Liberty Mutual, The Hartford and National General, offering auto, home, renters, condo and townhome, motorcycle, landlord, jewelry, umbrella, boat, business and RV insurance from multiple carriers.",
         "telephone": SITE["tel"], "email": SITE["email"], "priceRange": "Free quotes",
         "address": {"@type": "PostalAddress", "streetAddress": SITE["street"], "addressLocality": SITE["city"],
                     "addressRegion": SITE["region"], "postalCode": SITE["zip"], "addressCountry": "US"},
@@ -118,7 +127,7 @@ def header(active=""):
     </div>
     <div class="tb-group">
       <span class="hide-sm">{I['clock']}Call Mon–Fri, 9 AM – 5 PM &nbsp;·&nbsp; Office visits by appointment</span>
-      <span>{I['pin']}<span class="hide-sm">Denton, TX ·&nbsp;</span>Serving All of Texas</span>
+      <a {CL} class="tb-client">{I['lock']}Client Login</a>
     </div>
   </div>
 </div>
@@ -139,6 +148,7 @@ def header(active=""):
       <a href="/news-and-insights/"{cur('news')}>News &amp; Insights</a>
       <a href="/faq/"{cur('faq')}>FAQ</a>
       <a href="/contact/"{cur('contact')}>Contact</a>
+      <a {CL} class="nav-client">{I['lock']} Client Center Login</a>
       <a href="/contact/#quote" class="btn btn-gold">Get a Free Quote</a>
     </nav>
   </div>
@@ -152,7 +162,7 @@ def footer():
   <div class="container foot">
     <div>
       <div class="foot-logo"><img src="/images/logo.png" alt="Trailmark Insurance Advisors logo" width="900" height="580" loading="lazy"></div>
-      <p>Trailmark Insurance Advisors is an independent, Texas-owned insurance agency in Denton, TX. We compare auto, home, renters, business and specialty insurance from multiple carriers for families and businesses across Denton County, Dallas–Fort Worth and all of Texas.</p>
+      <p>Trailmark Insurance Advisors is an independent, Texas-owned insurance agency in Denton, TX. We compare auto, home, renters, business and specialty insurance from carriers like Progressive, Travelers, Liberty Mutual, The Hartford and National General for families and businesses across Denton County, Dallas–Fort Worth and all of Texas.</p>
     </div>
     <div>
       <h4>Our Products</h4>
@@ -169,7 +179,9 @@ def footer():
         <li><a href="/faq/">FAQ</a></li>
         <li><a href="/contact/">Contact</a></li>
         <li><a href="/contact/#quote">Get a Free Quote</a></li>
-        <li><a href="/privacy/">Privacy Policy</a></li>
+        <li><a {CL}>Client Center Login</a></li>
+        <li><a href="/privacy-policy/">Privacy Policy</a></li>
+        <li><a href="/terms/">Text Messaging Terms</a></li>
       </ul>
     </div>
     <div>
@@ -183,16 +195,20 @@ def footer():
     </div>
   </div>
   <div class="container foot-bottom">
-    <span>© <span class="yr">2026</span> Trailmark Insurance Advisors · Denton, Texas · <a href="/privacy/">Privacy Policy</a></span>
+    <span>© <span class="yr">2026</span> Trailmark Insurance Advisors LLC · Denton, Texas · <a href="/privacy-policy/">Privacy Policy</a> · <a href="/terms/">Terms</a></span>
     <span>Coverage is subject to policy terms, underwriting and availability. Information on this site is general and not a guarantee of coverage.</span>
   </div>
 </footer>
+<div class="sticky-cta">
+  <a href="/contact/#quote" class="btn btn-gold">Get a Free Quote</a>
+  <a href="tel:{SITE['tel']}" class="sticky-call" aria-label="Call {SITE['phone']}">{I['phone']}</a>
+</div>
 <script src="/js/trailmark.js" defer></script>
 </body>
 </html>
 """
 
-def page_hero(eyebrow, h1, lead, crumbs, image=None, alt=""):
+def page_hero(eyebrow, h1, lead, crumbs, image=None, alt="", ctas=""):
     cr = ' <span>/</span> '.join(f'<a href="{h}">{n}</a>' if i < len(crumbs)-1 else f'<b>{n}</b>' for i, (n, h) in enumerate(crumbs))
     pic = f'<div class="ph-img"><img src="{image}" alt="{esc(alt)}" width="1400" height="1050" fetchpriority="high"></div>' if image else ""
     return f"""<section class="page-hero{' with-img' if image else ''}">
@@ -202,6 +218,7 @@ def page_hero(eyebrow, h1, lead, crumbs, image=None, alt=""):
       <span class="eyebrow">{eyebrow}</span>
       <h1>{h1}</h1>
       <p>{lead}</p>
+      {ctas}
     </div>
     {pic}
   </div>
@@ -227,14 +244,15 @@ def faq_list(faqs):
     return '<div class="faq">' + "".join(f'<details><summary>{q}</summary><p>{a}</p></details>' for q, a in faqs) + "</div>"
 
 CHIPS = [(p["cov"], p["short"]) for p in PRODUCTS] + [("Bundle", "Bundle")]
+
 def quote_form(source):
     chips = "\n".join(f'              <label><input type="checkbox" name="coverage" value="{v}"><span>{l}</span></label>' for v, l in CHIPS)
     return f"""<div class="form-card reveal">
-      <form class="quote-form" data-endpoint="{SITE['formspree']}" novalidate>
-        <input type="hidden" name="_subject" value="New quote request from texastrailmark.com">
+      <form class="quote-form" data-endpoint="{SITE['formspree']}" enctype="multipart/form-data" novalidate>
+        <input type="hidden" name="_subject" value="New message for Eric from texastrailmark.com">
         <input type="hidden" name="source_page" value="{source}">
-        <h3>Quick Quote Request</h3>
-        <p>No obligation. We never sell your information.</p>
+        <h3>Talk With Eric</h3>
+        <p>Ask a question or request a free review of your current policy. No obligation.</p>
         <div class="fgrid">
           <div class="field"><label for="fname">First Name *</label><input id="fname" name="first_name" required autocomplete="given-name"></div>
           <div class="field"><label for="lname">Last Name *</label><input id="lname" name="last_name" required autocomplete="family-name"></div>
@@ -243,28 +261,34 @@ def quote_form(source):
           <div class="field"><label for="zip">ZIP Code</label><input id="zip" name="zip" inputmode="numeric" maxlength="5" autocomplete="postal-code"></div>
           <div class="field"><label for="contact_pref">Best Way to Reach You</label>
             <select id="contact_pref" name="contact_preference"><option>Phone call</option><option>Text message</option><option>Email</option></select></div>
-          <div class="field full"><span class="lbl">Coverage I'm Interested In</span>
+          <div class="field full"><span class="lbl">What Can Eric Help With?</span>
             <div class="chips">
 {chips}
             </div>
           </div>
-          <div class="field full"><label for="msg">Anything else we should know?</label><textarea id="msg" name="message" rows="4" placeholder="Current carrier, renewal date, questions…"></textarea></div>
+          <div class="field full"><label for="policy_file">Attach Your Current Policy <em>(optional)</em></label>
+            <label class="file-drop" for="policy_file">{I['doc']}<span class="file-text"><strong>Choose files</strong> or drag them here<small>Your declarations page works best. PDF, JPG or PNG.</small></span></label>
+            <input id="policy_file" class="file-input" name="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,application/pdf,image/*" multiple>
+          </div>
+          <div class="field full"><label for="msg">Questions or Details</label><textarea id="msg" name="message" rows="4" placeholder="Current carrier, renewal date, what you'd like Eric to look at…"></textarea></div>
+          <div class="field full consent"><label><input type="checkbox" name="sms_consent" value="Yes, I agree to receive customer service text messages"><span>Yes, I'd like to receive customer service text messages from Trailmark Insurance Advisors LLC about my quote requests, appointments, applications, policy servicing and renewals. Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe or HELP for help. Consent is not a condition of purchasing insurance. See our <a href="/privacy-policy/">Privacy Policy</a> and <a href="/terms/">Text Messaging Terms</a>.</span></label></div>
         </div>
-        <button type="submit" class="btn btn-gold">Request My Free Quote</button>
-        <p class="form-note">By submitting, you agree to be contacted by Trailmark Insurance Advisors about your quote. See our <a href="/privacy/">Privacy Policy</a>.</p>
+        <button type="submit" class="btn btn-gold">Send to Eric</button>
+        <p class="form-note">By submitting, you agree to be contacted by Trailmark Insurance Advisors LLC about your request. See our <a href="/privacy-policy/">Privacy Policy</a>.</p>
       </form>
       <div class="form-success" role="status">
         {I['check']}
         <h3>Thank you!</h3>
-        <p>We received your request and an advisor will be in touch soon, usually within one business day.</p>
+        <p class="ok-msg">Eric received your message and will be in touch soon, usually within one business day.</p>
       </div>
     </div>"""
 
-def contact_info(h2="Request Your Free Quote", eyebrow="Get in Touch"):
+def contact_info(h2="Prefer to Talk With Eric?", eyebrow="Talk to a Real Person"):
     return f"""<div class="contact-info reveal">
       <span class="eyebrow">{eyebrow}</span>
       <h2>{h2}</h2>
-      <p>Tell us a little about what you need and an advisor will reach out, usually within one business day.</p>
+      <p>Have a question, a complicated situation or a policy you'd like a second opinion on? Send Eric a message and attach your current policy if you'd like. He'll review it and reach out, usually within one business day.</p>
+      <p class="quote-nudge">Want numbers right now? <a href="/contact/#quote">Start a free online quote {I['arrow']}</a></p>
       <div class="info-item"><div class="ico">{I['phone']}</div><div><small>Call Us</small><a href="tel:{SITE['tel']}"><strong>{SITE['phone']}</strong></a></div></div>
       <div class="info-item"><div class="ico">{I['mail']}</div><div><small>Email</small><a href="mailto:{SITE['email']}"><strong>{SITE['email']}</strong></a></div></div>
       <div class="info-item"><div class="ico">{I['pin']}</div><div><small>Office</small><strong>{ADDR_HTML}</strong></div></div>
@@ -308,7 +332,7 @@ def areas_section():
 # ---------------------------------------------------------------- HOME
 def build_home():
     title = "Trailmark Insurance Advisors | Independent Insurance Agency in Denton, TX"
-    desc = "Independent insurance agency in Denton, TX. Compare auto, home, renters, condo, motorcycle, landlord, umbrella, boat, RV and business insurance quotes from multiple carriers. Free quotes."
+    desc = "Compare Texas home and auto insurance rates from Progressive, Travelers, Liberty Mutual, The Hartford and National General in about 10 minutes. Independent insurance agency in Denton, TX."
     web = {"@type": "WebSite", "@id": U + "/#website", "url": U + "/", "name": SITE["name"], "publisher": {"@id": U + "/#agency"}}
     home_faq = GENERAL_FAQ[:4]
     schema = ld(org_schema(), web, faq_schema(home_faq))
@@ -319,17 +343,18 @@ def build_home():
   <div class="container">
     <div class="reveal">
       <span class="eyebrow">Independent Insurance Agency · Denton, Texas</span>
-      <h1>We Help You Find the <em>Right Trail</em> to Better Coverage.</h1>
-      <p class="lead">Auto, home, renters, business and specialty insurance from a local advisor who works for you, not one insurance company. We compare multiple top-rated carriers so you get the protection you need at a price that makes sense.</p>
+      <h1>Compare Texas Home &amp; Auto Rates From Top Carriers in <em>About 10 Minutes</em>.</h1>
+      <p class="lead">Instead of one company's price, Trailmark shows you quotes from carriers like Progressive, Travelers, Liberty Mutual, The Hartford and National General, plus a local advisor who explains the difference.</p>
       <div class="hero-ctas">
-        <a href="/contact/#quote" class="btn btn-gold">Get a Free Quote {I['arrow']}</a>
+        <a href="/contact/#quote" class="btn btn-gold">Start My Free Quote {I['arrow']}</a>
         <a href="tel:{SITE['tel']}" class="btn btn-outline">{I['phone']} Call {SITE['phone']}</a>
       </div>
       <div class="hero-trust">
         <div>{I['shield']}Licensed in Texas</div>
-        <div>{I['users']}Locally Owned</div>
-        <div>{I['chart']}Multiple Carriers</div>
+        <div>{I['users']}Saving clients money since 2020</div>
+        <div>{I['chart']}Multiple top-rated carriers</div>
       </div>
+      <p class="hero-client">Already a client? <a {CL}>Log in to the Client Center {I['arrow']}</a></p>
     </div>
     <div class="hero-art reveal">
       <div class="card">
@@ -342,13 +367,17 @@ def build_home():
   </div>
 </section>
 
-<section class="strip">
+<section class="review-band">
   <div class="container">
-    <div>
-      <h2 class="h3">Paying too much for insurance?</h2>
-      <p>Let us shop your current policies. It takes about 10 minutes and costs nothing.</p>
+    <div class="rb-ico">{I['doc']}</div>
+    <div class="rb-text">
+      <h2>Paying too much for insurance?</h2>
+      <p>Send Eric your current policy and he'll compare it against multiple carriers for free. No obligation, no pressure.</p>
     </div>
-    <a href="/contact/#quote" class="btn btn-gold">Compare My Rates</a>
+    <div class="rb-ctas">
+      <a href="/contact/#talk" class="btn btn-navy">Send My Policy for a Free Review</a>
+      <a href="/contact/#quote" class="rb-alt">Or compare quotes online now {I['arrow']}</a>
+    </div>
   </div>
 </section>
 
@@ -375,15 +404,18 @@ def build_home():
       <div class="feat"><div class="num">{I['chat']}</div><div><h3 class="h4">Plain-English Advice</h3><p>No jargon, no pressure. We explain what you're buying and why it matters.</p></div></div>
       <div class="feat"><div class="num">{I['shield']}</div><div><h3 class="h4">Here When You Need Us</h3><p>Claims questions, policy changes and annual reviews. You'll talk to a real person who knows your name.</p></div></div>
     </div>
-    <div class="stats reveal">
-      <div class="stat"><strong>TX</strong><span>Licensed, local &amp; Texas-owned</span></div>
-      <div class="stat"><strong>1</strong><span>Advisor for all your policies</span></div>
-      <div class="stat"><strong>10 min</strong><span>Typical time to start a quote</span></div>
-      <div class="stat"><strong>$0</strong><span>Cost for a coverage review</span></div>
+    <div class="reveal">
+      <div class="stats">
+        <div class="stat"><strong>$5,726</strong><span>Most saved for one client in a year on home &amp; auto*</span></div>
+        <div class="stat"><strong>2020</strong><span>Saving Texans money on insurance since</span></div>
+        <div class="stat"><strong>10 min</strong><span>Typical time to compare quotes online</span></div>
+        <div class="stat"><strong>$0</strong><span>Cost for a quote or policy review</span></div>
+      </div>
+      <p class="stat-note">*Based on one client's annual home and auto premiums before and after switching. Individual savings vary.</p>
     </div>
   </div>
 </section>
-
+{carriers_band()}
 <section class="section" id="how">
   <div class="container">
     <div class="section-head reveal">
@@ -392,10 +424,11 @@ def build_home():
       <div class="rule"></div>
     </div>
     <div class="steps">
-      <div class="step reveal"><div class="circle">1</div><h3>Tell Us About You</h3><p>Fill out our quick quote form or give us a call. Share your current policy if you have one.</p></div>
-      <div class="step reveal"><div class="circle">2</div><h3>We Shop the Market</h3><p>We compare coverage and pricing across multiple carriers to find your best fit.</p></div>
-      <div class="step reveal"><div class="circle">3</div><h3>Pick &amp; Get Protected</h3><p>We walk you through your options, you choose, and we handle the paperwork.</p></div>
+      <div class="step reveal"><div class="circle">1</div><h3>Start Your Quote</h3><p>Answer a few questions online in about 10 minutes, or call us and we'll do it together.</p></div>
+      <div class="step reveal"><div class="circle">2</div><h3>Compare Carriers</h3><p>See coverage and pricing from multiple top-rated insurance companies side by side.</p></div>
+      <div class="step reveal"><div class="circle">3</div><h3>Pick &amp; Get Protected</h3><p>Eric walks you through your options, you choose, and we handle the paperwork.</p></div>
     </div>
+    <div class="center-cta reveal"><a href="/contact/#quote" class="btn btn-gold">Start My Free Quote {I['arrow']}</a></div>
   </div>
 </section>
 
@@ -406,17 +439,17 @@ def build_home():
       <span class="tag">Texas Owned &amp; Operated</span>
     </div>
     <div class="reveal">
-      <span class="eyebrow">About Us</span>
-      <h2>Marking a Better Trail for Texas Families &amp; Businesses</h2>
-      <p>Trailmark Insurance Advisors was founded on a simple idea: buying insurance should feel like getting advice from a trusted neighbor, not a sales pitch.</p>
-      <p>Led by insurance advisor Eric Glenn, our Denton office brings hands-on insurance experience to drivers, homeowners, renters and business owners across North Texas. As an independent agency, we can offer more choices and find coverage that truly fits.</p>
+      <span class="eyebrow">Meet Your Advisor</span>
+      <h2>Hi, I'm Eric Glenn.</h2>
+      <p>I've been helping Texas families and business owners save money on home, auto, condo, renters, landlord, motorcycle and business insurance since 2020. My biggest win so far: saving one client $5,726 a year on their home and auto.</p>
+      <p>I started Trailmark so my clients would always get to compare. As an independent agency, I can shop your coverage with carriers like Progressive, Travelers, Liberty Mutual, The Hartford and National General, so I can match you with the right coverage at the best available price instead of fitting you into one company's box.</p>
       <ul class="checks">
-        <li>{I['check']}Licensed Texas agents</li>
+        <li>{I['check']}Licensed Texas agent</li>
         <li>{I['check']}Independent &amp; unbiased</li>
         <li>{I['check']}Personal &amp; commercial lines</li>
         <li>{I['check']}Free annual policy reviews</li>
       </ul>
-      <a href="/contact/" class="btn btn-navy">Talk to an Advisor</a>
+      <a href="/contact/#talk" class="btn btn-navy">Talk With Eric</a>
     </div>
   </div>
 </section>
@@ -450,7 +483,7 @@ def build_home():
 </section>
 
 {cta_band()}
-<section class="section contact" id="quote">
+<section class="section contact" id="talk">
   <div class="container">
     {contact_info()}
     {quote_form("Home page")}
@@ -460,7 +493,6 @@ def build_home():
 """ + footer()
     write("index.html", body)
 
-# ---------------------------------------------------------------- PRODUCTS HUB
 def build_products_hub():
     title = "Our Insurance Products | Auto, Home, Business & More in Denton, TX | Trailmark"
     desc = "Explore every insurance product Trailmark offers in Denton, TX: auto, home, renters, condo and townhome, motorcycle, landlord, jewelry, umbrella, boat, business and RV insurance."
@@ -483,7 +515,7 @@ def build_products_hub():
     {product_grid()}
   </div>
 </section>
-
+{carriers_band()}
 <section class="section tint">
   <div class="container narrow reveal">
     <div class="section-head">
@@ -526,9 +558,10 @@ def build_product(p):
     post_html = ""
     if rel_posts:
         post_html = '<div class="side-card"><h3>Related Insights</h3><ul class="side-links">' + "".join(f'<li><a href="/news-and-insights/{b["slug"]}/">{b["title"]}</a></li>' for b in rel_posts) + "</ul></div>"
+    ctas = f'<div class="hero-ctas ph-ctas"><a href="/contact/#quote" class="btn btn-gold">Get a Free {p["short"]} Quote {I["arrow"]}</a><a href="/contact/#talk" class="btn btn-outline-light">Talk With Eric</a></div>'
     body = head(p["title"], p["desc"], path, image=img(p["slug"]), schema=schema) + header("products") + f"""
 <main id="main">
-{page_hero("Independent Insurance Agency · Denton, TX", p["h1"], p["lead"], crumbs, img(p["slug"]), p["alt"])}
+{page_hero("Independent Insurance Agency · Denton, TX", p["h1"], p["lead"], crumbs, img(p["slug"]), p["alt"], ctas)}
 <section class="section">
   <div class="container layout">
     <article class="prose">
@@ -542,15 +575,16 @@ def build_product(p):
       <ul>{save}</ul>
       <h2>{p['name']} FAQs</h2>
       {faq_list(p['faqs'])}
-      <div class="callout">Ready to compare {p['name'].lower()} quotes? <a href="/contact/?coverage={p['cov']}#quote">Request a free quote</a> or call <a href="tel:{SITE['tel']}">{SITE['phone']}</a>. Eric Glenn and the team at Trailmark Insurance Advisors in Denton will shop multiple carriers for you.</div>
+      <div class="callout">Ready to compare {p['name'].lower()} rates? <a href="/contact/#quote">Start your free online quote</a> or call <a href="tel:{SITE['tel']}">{SITE['phone']}</a>. Have questions first, or want Eric to review your current policy? <a href="/contact/#talk">Send Eric a message</a>.</div>
     </article>
     <aside class="side">
       <div class="side-card navy">
         <h3>Get a Free {p['short']} Quote</h3>
-        <p>Compare coverage from multiple carriers in about 10 minutes. No obligation.</p>
-        <a href="/contact/?coverage={p['cov']}#quote" class="btn btn-gold">Start My Quote</a>
+        <p>Compare rates from multiple top-rated carriers in about 10 minutes. No obligation.</p>
+        <a href="/contact/#quote" class="btn btn-gold">Start My Quote</a>
         <a href="tel:{SITE['tel']}" class="side-phone">{I['phone']} {SITE['phone']}</a>
         <small>Phone: Mon–Fri, 9 AM – 5 PM</small>
+        <a href="/contact/#talk" class="side-talk">Prefer to talk first? Message Eric →</a>
       </div>
       {post_html}
       <div class="side-card">
@@ -571,12 +605,12 @@ def build_product(p):
     <div class="pgrid three">{rel}</div>
   </div>
 </section>
+{carriers_band()}
 {cta_band(f"Protect What Matters With the Right {p['short']} Coverage", "Get a free, no-obligation quote from a local, independent advisor in Denton.")}
 </main>
 """ + footer()
     write(f"products/{p['slug']}/index.html", body)
 
-# ---------------------------------------------------------------- BLOG
 def build_blog_index():
     title = "News & Insights | Texas Insurance Tips & Guides | Trailmark Insurance Advisors"
     desc = "Insurance news, tips and plain-English guides for Denton and North Texas families and businesses from Trailmark Insurance Advisors, an independent agency in Denton, TX."
@@ -629,7 +663,7 @@ def build_post(b):
     <img class="post-img" src="{img(b['img'])}" alt="{esc(P[b['img']]['alt'])}" width="1400" height="1050">
     <article class="prose">
       {b['body']}
-      <div class="author-box"><img src="/images/eric-glenn-square.jpg" alt="Eric Glenn" width="88" height="88" loading="lazy"><div><strong>About the author</strong><p>Eric Glenn is an insurance advisor with Trailmark Insurance Advisors, an independent, Texas-owned agency at {SITE['street']} in Denton. He helps families and businesses across Denton County and North Texas compare coverage from multiple carriers. Reach him at <a href="tel:{SITE['tel']}">{SITE['phone']}</a> or <a href="mailto:{SITE['email']}">{SITE['email']}</a>.</p></div></div>
+      <div class="author-box"><img src="/images/eric-glenn-square.jpg" alt="Eric Glenn" width="88" height="88" loading="lazy"><div><strong>About the author</strong><p>Eric Glenn is an insurance advisor with Trailmark Insurance Advisors, an independent, Texas-owned agency at {SITE['street']} in Denton. He has been helping Texans save money on insurance since 2020 and compares coverage from carriers like Progressive, Travelers, Liberty Mutual, The Hartford and National General for families and businesses across Denton County and North Texas. Reach him at <a href="tel:{SITE['tel']}">{SITE['phone']}</a> or <a href="mailto:{SITE['email']}">{SITE['email']}</a>.</p></div></div>
       <p class="disclaimer">This article is general information, not legal advice or a guarantee of coverage. Coverage depends on your specific policy, carrier and underwriting.</p>
     </article>
   </div>
@@ -680,17 +714,26 @@ def build_faq():
 # ---------------------------------------------------------------- CONTACT
 def build_contact():
     title = "Contact Trailmark Insurance Advisors | Free Insurance Quote in Denton, TX"
-    desc = "Contact Trailmark Insurance Advisors at 3616 Duchess Dr, Ste. 120, Denton, TX 76205. Call (214) 531-7932 or request a free auto, home, renters, business or specialty insurance quote online."
+    desc = "Contact Trailmark Insurance Advisors at 3616 Duchess Dr, Ste. 120, Denton, TX 76205. Call (214) 531-7932, start a free online quote, or send Eric your current policy for a free review."
     crumbs = [("Home", "/"), ("Contact", "/contact/")]
     cp = {"@type": "ContactPage", "url": U + "/contact/", "name": "Contact Trailmark Insurance Advisors", "about": {"@id": U + "/#agency"}}
     schema = ld(org_schema(), crumbs_schema(crumbs), cp)
     q = "3616+Duchess+Dr+Ste+120,+Denton,+TX+76205"
     body = head(title, desc, "/contact/", schema=schema) + header("contact") + f"""
 <main id="main">
-{page_hero("Contact Us", "Contact Trailmark Insurance Advisors", "Request a free quote, ask a coverage question or schedule an office visit. We usually respond within one business day.", crumbs)}
-<section class="section contact" id="quote">
+{page_hero("Contact Us", "Contact Trailmark Insurance Advisors", "Start a free online quote, send Eric a question or a policy to review, or log in to manage an existing policy.", crumbs)}
+<section class="section choices">
   <div class="container">
-    {contact_info("Let's Talk About Your Coverage", "Get in Touch")}
+    <div class="choice-grid">
+      <div class="choice reveal featured"><div class="ico">{I['chart']}</div><h2 class="h3">Compare Quotes Online</h2><p>See real rates from multiple top-rated carriers in about 10 minutes.</p><a href="/contact/#quote" class="btn btn-gold">Start My Free Quote</a></div>
+      <div class="choice reveal"><div class="ico">{I['chat']}</div><h2 class="h3">Talk With Eric</h2><p>Questions, or a current policy you'd like reviewed? Send a message below.</p><a href="#talk" class="btn btn-outline">Send a Message</a></div>
+      <div class="choice reveal"><div class="ico">{I['lock']}</div><h2 class="h3">Already a Client?</h2><p>View your policies and request service in our secure Client Center.</p><a {CL} class="btn btn-navy">Client Center Login</a></div>
+    </div>
+  </div>
+</section>
+<section class="section contact" id="talk">
+  <div class="container">
+    {contact_info()}
     {quote_form("Contact page")}
   </div>
 </section>
@@ -711,56 +754,33 @@ def build_contact():
 """ + footer()
     write("contact/index.html", body)
 
-# ---------------------------------------------------------------- PRIVACY
 def build_privacy():
-    title = "Privacy Policy | Trailmark Insurance Advisors"
-    desc = "How Trailmark Insurance Advisors in Denton, TX collects, uses and protects the information you share through texastrailmark.com."
-    crumbs = [("Home", "/"), ("Privacy Policy", "/privacy/")]
-    schema = ld(org_schema(), crumbs_schema(crumbs))
-    body = head(title, desc, "/privacy/", schema=schema) + header() + f"""
-<main id="main">
-{page_hero("Legal", "Privacy Policy", "Effective November 1, 2026", crumbs)}
-<section class="section">
-  <div class="container narrow prose">
-    <p>Trailmark Insurance Advisors ("Trailmark," "we," "us") respects your privacy. This policy explains what information we collect through texastrailmark.com, how we use it and the choices you have.</p>
-    <h2>Information we collect</h2>
-    <ul>
-      <li><strong>Information you give us.</strong> When you fill out a quote request or contact form, call or email us, we collect details such as your name, email address, phone number, ZIP code, the coverage you're interested in and anything you include in your message.</li>
-      <li><strong>Information collected automatically.</strong> Like most websites, our hosting provider and the services we use may log basic technical information such as your IP address, browser type, pages visited and the date and time of your visit.</li>
-    </ul>
-    <h2>How we use your information</h2>
-    <ul>
-      <li>To respond to your questions and prepare insurance quotes</li>
-      <li>To contact you by phone, text or email about your request, using the method you prefer</li>
-      <li>To share necessary information with insurance companies when you ask us to obtain quotes or coverage for you</li>
-      <li>To operate, secure and improve our website</li>
-      <li>To meet legal and regulatory obligations</li>
-    </ul>
-    <h2>We do not sell your information</h2>
-    <p>We do not sell, rent or trade your personal information. We share it only with insurance carriers and service providers as needed to provide the quotes and services you request, or when required by law.</p>
-    <h2>Service providers we use</h2>
-    <ul>
-      <li><strong>Formspree</strong> processes the forms on our website and delivers your submission to us by email.</li>
-      <li><strong>GitHub Pages</strong> and <strong>Cloudflare</strong> host and deliver our website.</li>
-      <li><strong>Google Fonts</strong> and <strong>Google Maps</strong> provide fonts and the map on our contact page, and may collect technical information under Google's own privacy policy.</li>
-    </ul>
-    <h2>Cookies</h2>
-    <p>Our website does not use advertising cookies. Third-party services such as Google Maps may set their own cookies when you interact with them. You can control cookies through your browser settings.</p>
-    <h2>How we protect your information</h2>
-    <p>We use reasonable administrative, technical and physical safeguards to protect the information you share with us. No method of transmission over the internet is completely secure, so please avoid sending sensitive information such as Social Security or bank account numbers through our website forms.</p>
-    <h2>Your choices</h2>
-    <p>You may ask us to update or delete the contact information you've submitted, or to stop contacting you, at any time by emailing <a href="mailto:{SITE['email']}">{SITE['email']}</a> or calling <a href="tel:{SITE['tel']}">{SITE['phone']}</a>. If you receive a text message from us, you can reply STOP to opt out.</p>
-    <h2>Children's privacy</h2>
-    <p>Our website is intended for adults and is not directed to children under 13. We do not knowingly collect personal information from children.</p>
-    <h2>Changes to this policy</h2>
-    <p>We may update this policy from time to time. The effective date at the top of this page shows when it was last revised.</p>
-    <h2>Contact us</h2>
-    <p>Trailmark Insurance Advisors<br>{ADDR_HTML}<br><a href="tel:{SITE['tel']}">{SITE['phone']}</a> · <a href="mailto:{SITE['email']}">{SITE['email']}</a></p>
-  </div>
-</section>
-</main>
-""" + footer()
-    write("privacy/index.html", body)
+    E = f'<a href="mailto:{SITE["email"]}">{SITE["email"]}</a>'
+    legal_page("/privacy-policy/", "Privacy Policy | Trailmark Insurance Advisors LLC",
+        "How Trailmark Insurance Advisors LLC collects, uses, shares and protects your information, including text messaging privacy.",
+        "Privacy Policy", "Trailmark Insurance Advisors LLC", f"""
+    <p>We collect information you provide when requesting insurance information, obtaining a quote, contacting our agency, or receiving policy assistance. This may include your name, email address, telephone number, mailing address, and information needed to quote or service insurance.</p>
+    <p>We use this information to respond to requests, obtain insurance quotes, assist with applications, service policies, and communicate about appointments, coverage, and renewals.</p>
+    <p>We may share information as necessary with insurance carriers and service providers to obtain quotes, process applications, and service insurance, or as required by law.</p>
+    <h2>Text Messaging Privacy</h2>
+    <p>No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with third parties, except service providers necessary to deliver our text messaging services.</p>
+    <p>We use text messaging for customer service communications, including requested quotes, appointment reminders, policy updates, and renewal reminders. We do not send promotional offers by text.</p>
+    <h2>Information Protection</h2>
+    <p>We use reasonable administrative and technical safeguards to protect personal information. No method of electronic transmission or storage is completely secure.</p>
+    <h2>Your Choices</h2>
+    <p>You may contact us to request access to or correction of information you have provided, subject to applicable recordkeeping requirements.</p>
+    <p>To stop text messages, reply STOP. For assistance, reply HELP or email {E}.</p>
+    <h2>Contact</h2>
+    <p>Trailmark Insurance Advisors LLC<br>Email: {E}</p>
+    <p>We may update this policy by posting a revised version on this page.</p>
+    <p class="legal-links">See also: <a href="/terms/">Text Messaging Terms &amp; Conditions</a></p>""")
+    # Old address -> forward to the new one
+    write("privacy/index.html", f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Privacy Policy | Trailmark Insurance Advisors LLC</title>
+<meta name="robots" content="noindex"><link rel="canonical" href="{U}/privacy-policy/">
+<meta http-equiv="refresh" content="0; url=/privacy-policy/"></head>
+<body><p>Our Privacy Policy has moved to <a href="/privacy-policy/">texastrailmark.com/privacy-policy</a>.</p></body></html>
+""")
 
 def build_404():
     body = head("Page Not Found | Trailmark Insurance Advisors", "The page you're looking for couldn't be found.", "/404.html").replace('content="index, follow, max-image-preview:large"', 'content="noindex"') + header() + f"""
@@ -775,7 +795,7 @@ def build_404():
 def build_seo_files():
     pages = [("/", "1.0"), ("/products/", "0.9")] + [(f"/products/{p['slug']}/", "0.9") for p in PRODUCTS] + \
             [("/news-and-insights/", "0.8")] + [(f"/news-and-insights/{b['slug']}/", "0.7") for b in POSTS] + \
-            [("/faq/", "0.8"), ("/contact/", "0.8"), ("/privacy/", "0.3")]
+            [("/faq/", "0.8"), ("/contact/", "0.8"), ("/privacy-policy/", "0.3"), ("/terms/", "0.3")]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + \
          "".join(f"  <url><loc>{U}{p}</loc><lastmod>{SITE['updated']}</lastmod><priority>{pr}</priority></url>\n" for p, pr in pages) + "</urlset>\n"
     write("sitemap.xml", sm)
@@ -786,38 +806,44 @@ def build_seo_files():
          f"User-agent: *\nAllow: /\n\nSitemap: {U}/sitemap.xml\n"
     write("robots.txt", rb)
 
+    carriers = ", ".join(c[1] + (" (an Allstate company)" if c[0] == "national-general" else "") for c in CARRIERS)
     prod_lines = "\n".join(f"- [{p['name']}]({U}/products/{p['slug']}/): {strip(p['card'])}" for p in PRODUCTS)
     post_lines = "\n".join(f"- [{b['title']}]({U}/news-and-insights/{b['slug']}/): {b['excerpt']}" for b in POSTS)
     faq_lines = "\n".join(f"**Q: {q}**\nA: {strip(a)}\n" for q, a in GENERAL_FAQ)
     llms = f"""# Trailmark Insurance Advisors
 
-> Trailmark Insurance Advisors is an independent, Texas-owned insurance agency in Denton, Texas. Insurance advisor Eric Glenn compares auto, home, renters, condo and townhome, motorcycle, landlord, jewelry, umbrella, boat, business and RV insurance from multiple insurance companies for families and businesses in Denton County, the Dallas–Fort Worth area and throughout Texas. Quotes and coverage reviews are free.
+> Trailmark Insurance Advisors LLC is an independent, Texas-owned insurance agency in Denton, Texas. Insurance advisor Eric Glenn, who has been helping Texans save money on insurance since 2020, compares auto, home, renters, condo and townhome, motorcycle, landlord, jewelry, umbrella, boat, business and RV insurance from carriers including {carriers}. Online quotes take about 10 minutes, and quotes and policy reviews are free.
 
 ## Key facts
-- Business name: Trailmark Insurance Advisors
+- Business name: Trailmark Insurance Advisors LLC
 - Type: Independent insurance agency (works with multiple carriers, not a captive agent of one company)
-- Advisor: Eric Glenn, Insurance Advisor
+- Insurance carriers: {carriers}
+- Advisor: Eric Glenn, Insurance Advisor, helping clients save on insurance since 2020
+- Largest single-client savings to date: $5,726 per year on home and auto combined (individual savings vary)
 - Address: {SITE['street']}, Denton, TX {SITE['zip']}
 - Phone: {SITE['phone']}
 - Email: {SITE['email']}
 - Website: {U}/
 - Phone hours: Monday–Friday, 9:00 AM–5:00 PM Central Time
 - Office visits: By appointment only
-- Cost to work with us: Free. No fee for quotes, advice or coverage reviews; the agency is paid a commission by the insurance company the client chooses.
-- Pricing: Insurance premiums are set by each carrier and depend on the person, property and coverage. We do not publish prices; request a free quote for exact pricing.
+- Get an online quote (about 10 minutes): {SITE['quote']}
+- Existing clients – Client Center (view and service policies): {SITE['client']}
+- Talk with Eric or send a current policy for a free review: {U}/contact/#talk
+- Cost to work with us: Free. No fee for quotes, advice or policy reviews; the agency is paid a commission by the insurance company the client chooses.
+- Pricing: Premiums are set by each carrier and depend on the person, property and coverage. We do not publish prices; request a free quote for exact pricing.
 - Service area: {", ".join(AREAS)}, and all of Texas
-- Get a quote: {U}/contact/#quote
 
 ## Insurance products
 {prod_lines}
 
 ## Main pages
-- [Home]({U}/): Overview of Trailmark Insurance Advisors, products, service area and free quote form
+- [Home]({U}/): Overview, carriers, products, service area and contact form
 - [Our Products]({U}/products/): All insurance products in one place
 - [News & Insights]({U}/news-and-insights/): Plain-English insurance guides for North Texas
 - [FAQ]({U}/faq/): Common questions about working with Trailmark and about coverage
-- [Contact]({U}/contact/): Phone, email, office address, map and quote request form
-- [Privacy Policy]({U}/privacy/)
+- [Contact]({U}/contact/): Online quote, message Eric, Client Center, office address and map
+- [Privacy Policy]({U}/privacy-policy/)
+- [Text Messaging Terms & Conditions]({U}/terms/)
 
 ## News & Insights articles
 {post_lines}
@@ -826,7 +852,6 @@ def build_seo_files():
 {faq_lines}"""
     write("llms.txt", llms)
 
-# ---------------------------------------------------------------- CSS / JS
 def build_assets():
     css = open(os.path.join(HERE, "base.css")).read()
     css = css.replace(".reveal{opacity:0;", "html.js .reveal{opacity:0;").replace(".reveal.in{opacity:1;", "html.js .reveal.in{opacity:1;")
@@ -838,11 +863,64 @@ def build_assets():
     write("css/trailmark.css", css)
     write("js/trailmark.js", open(os.path.join(HERE, "site.js")).read())
 
+def carriers_band(h="Compare rates from carriers you know"):
+    def items(hidden):
+        ah = ' aria-hidden="true"' if hidden else ""
+        out = ""
+        for slug, name, hh, w in CARRIERS:
+            alt = "" if hidden else name
+            out += f'<li{ah}><img src="/images/carriers/{slug}.png" alt="{alt}" width="{round(w*hh/120)}" height="{hh}" style="height:{hh}px" loading="lazy"></li>'
+        return out
+    return f"""<section class="carriers" aria-label="Insurance carriers we work with">
+  <div class="container"><p class="carriers-h">{h}</p></div>
+  <div class="marquee"><ul class="track">{items(False)}{items(True)}{items(True)}{items(True)}</ul></div>
+</section>
+"""
+
+def legal_page(path, title, desc, h1, sub, body_html):
+    crumbs = [("Home", "/"), (h1, path)]
+    schema = ld(org_schema(), crumbs_schema(crumbs))
+    body = head(title, desc, path, schema=schema) + header() + f"""
+<main id="main">
+{page_hero("Trailmark Insurance Advisors LLC", h1, sub, crumbs)}
+<section class="section">
+  <div class="container narrow prose legal">
+{body_html}
+  </div>
+</section>
+</main>
+""" + footer()
+    write(path.strip("/") + "/index.html", body)
+
+def build_terms():
+    E = f'<a href="mailto:{SITE["email"]}">{SITE["email"]}</a>'
+    legal_page("/terms/", "Text Messaging Terms & Conditions | Trailmark Insurance Advisors LLC",
+        "Text messaging terms and conditions for the Trailmark Insurance Advisors Customer Service Text Messaging program.",
+        "Text Messaging Terms &amp; Conditions", "Trailmark Insurance Advisors LLC", f"""
+    <h2>Program Name</h2>
+    <p>Trailmark Insurance Advisors Customer Service Text Messaging.</p>
+    <h2>Program Description</h2>
+    <p>By opting in, you agree to receive customer service text messages from Trailmark Insurance Advisors LLC related to insurance quote requests, appointments, applications, policy servicing, and renewals. We do not send promotional offers through this program.</p>
+    <h2>Message Frequency and Charges</h2>
+    <p>Messages may be recurring. Message frequency varies based on your requests and insurance servicing needs.</p>
+    <p>Message and data rates may apply.</p>
+    <h2>Consent</h2>
+    <p>Consent to receive text messages is not a condition of purchasing insurance. You may contact our agency by email for assistance without enrolling in text messaging.</p>
+    <h2>Opting Out and Getting Help</h2>
+    <p>Reply STOP at any time to unsubscribe. You may receive a final message confirming your opt-out, after which no further messages will be sent unless you opt in again.</p>
+    <p>Reply HELP for assistance, or email {E}.</p>
+    <h2>Carrier Disclaimer</h2>
+    <p>Carriers are not liable for delayed or undelivered messages.</p>
+    <h2>Privacy</h2>
+    <p>Please review our <a href="/privacy-policy/">Privacy Policy</a> for information about how we collect, use, and protect your information.</p>
+    <h2>Insurance Requests</h2>
+    <p>Text messages do not bind, change, or cancel insurance coverage. Coverage requests require confirmation from an authorized agency representative or insurance carrier.</p>""")
+
 if __name__ == "__main__":
     build_assets()
     build_home(); build_products_hub()
     for p in PRODUCTS: build_product(p)
     build_blog_index()
     for b in POSTS: build_post(b)
-    build_faq(); build_contact(); build_privacy(); build_404(); build_seo_files()
+    build_faq(); build_contact(); build_privacy(); build_terms(); build_404(); build_seo_files()
     print("built")

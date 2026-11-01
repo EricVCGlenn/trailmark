@@ -14,7 +14,13 @@ SITE = {
     "advisor": "Eric Glenn",
     "formspree": "https://formspree.io/f/mvkzywbz",
     "updated": "2026-11-01",
+    "quote": "https://www.agentinsure.com/compare/auto-insurance-home-insurance/trailmarkins/quote.aspx",
+    "client": "https://customerservice.agentinsure.com/EzlynxCustomerService/trailmarkins/Account/LogIn",
 }
+
+# (file slug, name, display height px, source width at 120px tall)
+CARRIERS = [("progressive", "Progressive", 30, 956), ("travelers", "Travelers", 38, 588), ("liberty-mutual", "Liberty Mutual", 44, 472),
+            ("the-hartford", "The Hartford", 38, 613), ("national-general", "National General", 56, 219)]
 
 AREAS = ["Denton", "Corinth", "Lake Dallas", "Hickory Creek", "Argyle", "Flower Mound",
          "Highland Village", "Lewisville", "Little Elm", "Aubrey", "Sanger", "Krum",
@@ -316,14 +322,16 @@ GENERAL_FAQ = [
  ("What areas do you serve?", "Our office is in Denton, and we serve Denton County and the greater Dallas–Fort Worth area, including Corinth, Lake Dallas, Argyle, Flower Mound, Highland Village, Lewisville, Little Elm, Aubrey, Sanger, Krum, Prosper and Frisco. Because so much can be handled by phone and email, we can help clients throughout Texas."),
  ("Where is your office, and can I stop by?", "Our office is at 3616 Duchess Dr, Ste. 120, Denton, TX 76205. Office visits are by appointment only, so please call or email to schedule a time to meet in person."),
  ("What are your hours?", "Eric is available by phone Monday through Friday, 9:00 AM to 5:00 PM. In-person office visits are by appointment. You can request a quote online anytime."),
- ("How long does it take to get a quote?", "Most quotes can be started in about 10 minutes. Simple policies like auto, renters and home can often be quoted the same day. Business and specialty policies may take a little longer because we gather more details."),
+ ("How long does it take to get a quote?", "With our <a href=\"/contact/#quote\">online quoting tool</a>, most people can compare home and auto rates in about 10 minutes. Business and specialty policies may take a little longer because Eric gathers a few more details."),
+ ("Which insurance companies do you work with?", "Trailmark works with Progressive, Travelers, Liberty Mutual, The Hartford and National General (an Allstate company), and we're adding carriers over time. Because we're independent, we compare them side by side to find your best fit."),
  ("What information do I need for a quote?", "For auto insurance: driver's license numbers, vehicle information (or VINs) and your current policy, if you have one. For home insurance: your address, the home's approximate age and square footage, and roof age. Your current declarations page is the most helpful document of all."),
- ("Can you review my current insurance policy?", "Yes, and it's free. Send us your current declarations page and we'll explain what you have, point out any gaps and show you whether we can find better coverage or a better price."),
+ ("Can you review my current insurance policy?", "Yes, and it's free. <a href=\"/contact/#talk\">Send Eric a message</a> and attach your current declarations page. He'll explain what you have, point out any gaps and show you whether he can find better coverage or a better price."),
+ ("I'm already a Trailmark client. How do I view or change my policy?", "Log in to our secure <a href=\"https://customerservice.agentinsure.com/EzlynxCustomerService/trailmarkins/Account/LogIn\" target=\"_blank\" rel=\"noopener\">Client Center</a> to view your policies and request service, or call (214) 531-7932, Monday through Friday from 9:00 AM to 5:00 PM."),
  ("Will switching insurance companies leave me uninsured?", "No. We set up your new policy to start the same day your old one ends, or we help you cancel the old policy after the new one is active, so there's no gap in coverage."),
  ("Do you help with claims?", "Yes. Claims are filed with your insurance company, but we're here to guide you through the process, answer questions and advocate for you when you need it most."),
  ("How can I save money on insurance?", "Bundling home and auto is one of the biggest ways to save. Other common discounts include multi-car, safe driver, good student, claims-free, new roof, security systems and paying in full. We'll look for every discount you qualify for."),
  ("Do you insure businesses?", "Yes. We help small businesses, contractors, salons, pet groomers, restaurants, retail shops and professional offices with general liability, business owner's policies, commercial property, commercial auto, workers' compensation and more. Learn more about <a href=\"/products/business-insurance/\">business insurance</a>."),
- ("How do I get started?", "Call (214) 531-7932, email eric@texastrailmark.com or fill out our <a href=\"/contact/#quote\">free quote form</a>. We usually respond within one business day."),
+ ("How do I get started?", "The fastest way is to <a href=\"/contact/#quote\">start a free online quote</a> and compare rates from multiple carriers in about 10 minutes. Prefer to talk first? Call (214) 531-7932, email eric@texastrailmark.com or <a href=\"/contact/#talk\">send Eric a message</a>."),
 ]
 
 # ---------------------------------------------------------------- BLOG POSTS
@@ -358,7 +366,7 @@ dict(
 <li>Call us. We'll help you understand your coverage and what to expect.</li>
 </ul>
 <h2>Get a free hail coverage check</h2>
-<p>As an independent agency in Denton, Trailmark Insurance Advisors compares <a href="/products/home-insurance/">homeowners insurance</a> from multiple carriers. Send me your current declarations page and I'll review your wind and hail deductible, roof coverage and replacement cost for free, with no obligation.</p>
+<p>As an independent agency in Denton, Trailmark Insurance Advisors compares <a href="/products/home-insurance/">homeowners insurance</a> from multiple carriers. <a href="/contact/#talk">Send me your current declarations page</a> and I'll review your wind and hail deductible, roof coverage and replacement cost for free, with no obligation.</p>
 """),
 dict(
  slug="independent-insurance-agent-vs-captive-agent-denton",
@@ -385,7 +393,7 @@ dict(
 <h2>What about buying insurance online?</h2>
 <p>Buying direct can be quick, but you're on your own when it comes to choosing limits, understanding exclusions or handling a complicated claim. Many people discover gaps only after something goes wrong. A local advisor helps you avoid that.</p>
 <h2>Talk to a local, independent advisor in Denton</h2>
-<p>Trailmark Insurance Advisors is a Texas-owned independent insurance agency based in Denton. I'd be glad to review your current policies and show you how they compare. <a href="/contact/#quote">Request a free quote</a> or call (214) 531-7932.</p>
+<p>Trailmark Insurance Advisors is a Texas-owned independent insurance agency based in Denton. I'd be glad to <a href="/contact/#talk">review your current policies</a> and show you how they compare, or you can <a href="/contact/#quote">start a free online quote</a> or call (214) 531-7932.</p>
 """),
 dict(
  slug="condo-townhome-insurance-hoa-master-policy",
@@ -420,7 +428,7 @@ dict(
 <h2>Watch the master-policy deductible</h2>
 <p>Hail and wind deductibles on Texas master policies can be large. If the HOA passes that deductible on to owners, loss assessment coverage on your own policy can save you from an unexpected bill. Ask your HOA what its deductible is, then make sure your loss assessment limit is high enough.</p>
 <h2>Let us read the fine print with you</h2>
-<p>At Trailmark Insurance Advisors, we review your HOA documents and master policy and recommend <a href="/products/condo-insurance/">townhome and condo coverage</a> that fills the gaps without paying for duplicate coverage. <a href="/contact/#quote">Request a free review</a>.</p>
+<p>At Trailmark Insurance Advisors, we review your HOA documents and master policy and recommend <a href="/products/condo-insurance/">townhome and condo coverage</a> that fills the gaps without paying for duplicate coverage. <a href="/contact/#talk">Send Eric your HOA documents for a free review</a>.</p>
 """),
 dict(
  slug="renters-insurance-unt-twu-students-denton",

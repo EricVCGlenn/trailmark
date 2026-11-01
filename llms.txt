@@ -6,7 +6,7 @@
 - Business name: Trailmark Insurance Advisors LLC
 - Type: Independent insurance agency (works with multiple carriers, not a captive agent of one company)
 - Insurance carriers: Progressive, Travelers, Liberty Mutual, The Hartford, National General (an Allstate company)
-- Advisor: Eric Glenn, Insurance Advisor, helping clients save on insurance since 2020
+- Founder and advisor: Eric Glenn, licensed Texas property and casualty agent, helping North Texas clients save on insurance since 2020. Previously managed a single-carrier (captive) agency in the Flower Mound area and founded Trailmark to offer clients multiple carriers. Originally from Houston; bachelor's degree from the University of Oklahoma; former professional ballet dancer and dance studio artistic director who still performs and teaches ballet. Married with two daughters.
 - Largest single-client savings to date: $5,726 per year on home and auto combined (individual savings vary)
 - Address: 3616 Duchess Dr, Ste. 120, Denton, TX 76205
 - Phone: (214) 531-7932
@@ -37,6 +37,7 @@
 ## Main pages
 - [Home](https://texastrailmark.com/): Overview, carriers, products, service area and contact form
 - [Our Products](https://texastrailmark.com/products/): All insurance products in one place
+- [About Eric Glenn](https://texastrailmark.com/about/): Eric's background, why he started Trailmark and how he works with clients
 - [News & Insights](https://texastrailmark.com/news-and-insights/): Plain-English insurance guides for North Texas
 - [FAQ](https://texastrailmark.com/faq/): Common questions about working with Trailmark and about coverage
 - [Contact](https://texastrailmark.com/contact/): Online quote, message Eric, Client Center, office address and map
